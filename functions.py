@@ -71,7 +71,7 @@ def drop_values_multi(dataframe, list_of_columns, quantile):
     
     
 def central_limit_mean(dataset, sample_size = 50, num_simulations = 500, return_mean = False):    
-    """create a distribution of means"""
+    """Create a distribution of means"""
     random_chosen = [np.mean(np.random.choice(dataset, size = sample_size)) for i in range(num_simulations)]
     if return_mean == False:
         return random_chosen
@@ -79,18 +79,7 @@ def central_limit_mean(dataset, sample_size = 50, num_simulations = 500, return_
         return (random_chosen, round(np.mean(random_chosen), 2))
 
 def stepwise_selection(X, y, initial_list=[], threshold_in=0.01, threshold_out = 0.05, verbose=True):
-    """ Perform a forward-backward feature selection 
-    based on p-value from statsmodels.api.OLS
-    Arguments:
-        X - pandas.DataFrame with candidate features
-        y - list-like with the target
-        initial_list - list of features to start with (column names of X)
-        threshold_in - include a feature if its p-value < threshold_in
-        threshold_out - exclude a feature if its p-value > threshold_out
-        verbose - whether to print the sequence of inclusions and exclusions
-    Returns: list of selected features 
-    Always set threshold_in < threshold_out to avoid infinite looping.
-    """
+    """ Perform a forward-backward feature selection based on p-values"""
     included = list(initial_list)
     while True:
         changed=False
