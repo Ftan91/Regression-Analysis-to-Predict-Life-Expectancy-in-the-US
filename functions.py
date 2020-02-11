@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, cross_validate, cross_val_score, KFold
 from sklearn.metrics import r2_score
+import statsmodels.regression.linear_model as sm
 from statsmodels.regression.linear_model import OLS
 from statsmodels.tools import add_constant
 
@@ -76,57 +77,8 @@ def central_limit_mean(dataset, sample_size = 50, num_simulations = 500, return_
         return random_chosen
     else:
         return (random_chosen, round(np.mean(random_chosen), 2))
-    
-def CLT_violinplots(dataframe, x_axis, y_axis, sample_size = 50, num_simulations = 500):
-    """create multiple violinplots in a single figure"""
-    unique_list = dataframe[y_axis].unique()
-    df = pd.DataFrame(None, columns = ['{} types'.format(y_axis), '{} Sample Mean'.format(x_axis)])
-    
-    for i in unique_list:
-        CLT_data = central_limit_mean(dataframe[dataframe[y_axis] == i][x_axis], 
-                                      sample_size = sample_size, 
-                                      num_simulations = num_simulations)
-        df = pd.concat([df, pd.DataFrame(list(zip([i] * len(CLT_data), CLT_data)), 
-                                         columns = [y_axis, '{} Sample Means'.format(x_axis)])], 
-                        axis = 0, 
-                        ignore_index=True)
-                        
-    ordering = df.groupby(y_axis)['{} Sample Means'.format(x_axis)].mean().sort_values().index
-        
-#   plt.figure(figsize=(15,10))
-    sns.set(font_scale = 1.1)
-    sns.violinplot(x = '{} Sample Means'.format(x_axis), y = y_axis, data = df, palette="Set3", order = ordering)
-    plt.xticks(rotation = 45)
-    plt.show()
-    
-def sklearn_linreg_with_CV(X, y, test_size, n_splits):
-    "Generates R2 score"
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = test_size, random_state = 1)
-    linreg = LinearRegression().fit(X_train, y_train)
-    linreg_score = round(linreg.score(X_test, y_test),2)
 
-    cross_validation = KFold(n_splits = n_splits, shuffle = True, random_state = 1)
-    linreg_cv = LinearRegression()
-    cv_score = round(np.mean(cross_val_score(linreg_cv, X, y, scoring = 'r2', cv=cross_validation)),2)
-
-    return linreg_score, cv_score
-
-
-def statsmodel_regression(X_train, X_test, y_train, y_test):
-    "Similar with above however uses statsmodel'
-    regr = OLS(y_train, add_constant(X_train)).fit()
-    predictions = regr.predict(X_test)
-    r2_test = round(r2_score(y_test, predictions),2)
-    return r2_test, regr
-
-
-### COURTESY OF THE LEARN.CO LABS
-def stepwise_selection(X, y, 
-                       initial_list=[], 
-                       threshold_in=0.01, 
-                       threshold_out = 0.05, 
-                       verbose=True):
+def stepwise_selection(X, y, initial_list=[], threshold_in=0.01, threshold_out = 0.05, verbose=True):
     """ Perform a forward-backward feature selection 
     based on p-value from statsmodels.api.OLS
     Arguments:
@@ -138,7 +90,6 @@ def stepwise_selection(X, y,
         verbose - whether to print the sequence of inclusions and exclusions
     Returns: list of selected features 
     Always set threshold_in < threshold_out to avoid infinite looping.
-    See https://en.wikipedia.org/wiki/Stepwise_regression for the details
     """
     included = list(initial_list)
     while True:
@@ -175,8 +126,9 @@ def stepwise_selection(X, y,
 
 def update_model(dataframe, model_name, OLS_object, R2_scores_list):
     """Updates model table"""
-    dataframe.loc[dataframe.model == model_name, 'R2_train'] = R2_scores_list[0]
-    dataframe.loc[dataframe.model == model_name, 'CV_R2_train'] = R2_scores_list[1]
-    dataframe.loc[dataframe.model == model_name, 'AIC'] = round(OLS_object.aic,0)
-    dataframe.loc[dataframe.model == model_name, 'n_features'] = len(OLS_object.pvalues)
-    dataframe.loc[dataframe.model == model_name, '>0.05_pvalues'] = sum(OLS_object.pvalues > 0.05)
+    dataframe.loc[dataframe.Linear_Regression_Models == model_name, 'Train_R2'] = R2_scores_list[0]
+    dataframe.loc[dataframe.Linear_Regression_Models == model_name, 'CV_Avg_R2'] = R2_scores_list[1]
+    dataframe.loc[dataframe.Linear_Regression_Models == model_name, 'Val_R2'] = R2_scores_list[2]    
+    dataframe.loc[dataframe.Linear_Regression_Models == model_name, 'AIC'] = round(OLS_object.aic,0)
+    dataframe.loc[dataframe.Linear_Regression_Models == model_name, 'n_features'] = len(OLS_object.pvalues)
+    dataframe.loc[dataframe.Linear_Regression_Models == model_name, '>0.05_pvalues'] = sum(OLS_object.pvalues > 0.05)
