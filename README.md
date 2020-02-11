@@ -1,5 +1,5 @@
 # Regression_Insurance_Analysis
-Authors: Finn Tan and Sara Zylfo
+Authors: Finn Tan 
 
 We are a healthcare consultancy company hired by an European Life Insurance firm who is looking to expand into the US market. As such, we have been tasked to provide some statisical insights into the main drivers of life expectancy which will be a crucial input in driving our client's pricing strategies.
 
